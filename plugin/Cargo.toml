@@ -8,8 +8,8 @@ homepage = "https://github.com/HeroesGrave/cereal"
 license = "MIT"
 readme = "README.md"
 keywords = [
-    "serialization"
-    "serialisation" # The correct spelling
+    "serialization",
+    "serialisation", # The correct spelling
 ]
 
 [lib]
