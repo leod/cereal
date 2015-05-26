@@ -1,0 +1,18 @@
+[package]
+name = "cereal_macros"
+version = "0.1.0"
+authors = ["HeroesGrave <heroesgrave@gmail.com>"]
+description = "Syntax extension for the cereal library"
+repository = "https://github.com/HeroesGrave/cereal"
+homepage = "https://github.com/HeroesGrave/cereal"
+license = "MIT"
+readme = "README.md"
+keywords = [
+    "serialization"
+    "serialisation" # The correct spelling
+]
+
+[lib]
+name = "cereal_macros"
+path = "src/plugin.rs"
+plugin = true
