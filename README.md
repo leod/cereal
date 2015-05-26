@@ -87,4 +87,4 @@ let my_awesome_instance_2 = MyAwesomeStruct::read(a_reader).unwrap();
 ## What if it eats my laundry?
 This library is by nature a binarvore (binary data eater), but feeding it unhealthy data could result in it turning into a laundrovore.
 #### You have been warned
-If you encounter any problems or missing socks, open up an issue on the issue tracker, or ping me on `#rust-gamedev` (nick is `HeroesGrave`).
+If you encounter any problems or missing socks, open up an issue on the issue tracker, or ping me on `#rust-gamedev` if I'm there (nick is `HeroesGrave`).
