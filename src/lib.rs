@@ -44,7 +44,7 @@ macro_rules! impl_cereal_data {
             fn write(&self, write: &mut ::std::io::Write) -> $crate::CerealResult<()> {
                 match *self {
                     $Struct($(ref $field),+) => {
-                        $(try!($field.write(write)));+
+                        $(try!($crate::CerealData::write($field, write)));+
                     },
                 }
                 Ok(())
@@ -65,7 +65,7 @@ macro_rules! impl_cereal_data {
         impl $crate::CerealData for $Struct {
             fn write(&self, write: &mut ::std::io::Write) -> $crate::CerealResult<()> {
                 $(
-                    try!(self.$field.write(write))
+                    try!($crate::CerealData::write(&self.$field, write))
                 );+;
                 Ok(())
             }
@@ -73,7 +73,7 @@ macro_rules! impl_cereal_data {
             fn read(read: &mut ::std::io::Read) -> $crate::CerealResult<$Struct> {
                 Ok($Struct {
                     $(
-                        $field: try!(CerealData::read(read))
+                        $field: try!($crate::CerealData::read(read))
                     ),+
                 })
             }
