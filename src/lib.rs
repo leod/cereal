@@ -133,6 +133,16 @@ data_primitive!(u64, 8);
 data_primitive!(i64, 8);
 data_primitive!(f64, 8);
 
+impl CerealData for bool { // We can't really write 1 bit by itself
+    fn write(&self, write: &mut Write) -> CerealResult<()> {
+        (if *self { 1u8 } else { 0u8 }).write(write)
+    }
+
+    fn read(read: &mut Read) -> CerealResult<bool> {
+        <u8>::read(read).map(|u| u != 0)
+    }
+}
+
 impl CerealData for usize { // For cross-platform consistency we use the highest possible number of bits
     fn write(&self, write: &mut Write) -> CerealResult<()> {
         (*self as u64).write(write)
