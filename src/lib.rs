@@ -172,6 +172,16 @@ impl<T:CerealData> CerealData for Vec<T> {
     }
 }
 
+impl<T:CerealData> CerealData for Box<T> {
+    fn write(&self, write: &mut Write) -> CerealResult<()> {
+        CerealData::write(&**self, write)
+    }
+
+    fn read(read: &mut Read) -> CerealResult<Box<T>> {
+        CerealData::read(read).map(|o| Box::new(o))
+    }
+}
+
 impl CerealData for String {
     fn write(&self, write: &mut Write) -> CerealResult<()> {
         try!(self.len().write(write));

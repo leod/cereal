@@ -5,7 +5,7 @@ extern crate rustc;
 extern crate syntax;
 
 use rustc::plugin::Registry;
-use syntax::ast::{Expr, Field, MetaItem, Mutability, Stmt};
+use syntax::ast::{Arm, Expr, Field, MetaItem, Mutability, Stmt};
 use syntax::codemap::Span;
 use syntax::ext::base::{Annotatable, MultiDecorator, ExtCtxt};
 use syntax::ext::build::AstBuilder;
@@ -96,6 +96,9 @@ pub fn read_body(ecx: &mut ExtCtxt, span: Span, substr: &generic::Substructure) 
         generic::StaticStruct(_, generic::Unnamed(ref fields)) if fields.is_empty() => {
             ecx.expr_ident(span, substr.type_ident)
         },
+        generic::StaticStruct(_, generic::Named(ref fields)) if fields.is_empty() => {
+            ecx.expr_ident(span, substr.type_ident)
+        },
         generic::StaticStruct(_, generic::Unnamed(ref fields)) => {
             let all: Vec<P<Expr>> = (0..fields.len()).map(|_| {
                 quote_expr!(ecx, try!(::cereal::CerealData::read($reader)))
@@ -109,6 +112,43 @@ pub fn read_body(ecx: &mut ExtCtxt, span: Span, substr: &generic::Substructure) 
             }).collect();
 
             ecx.expr_struct_ident(span, substr.type_ident, all)
+        },
+        generic::StaticEnum(_, ref variants) => {
+            let mut arms: Vec<Arm> = variants.iter().enumerate().map(|(id, &(ident, _, ref fields))| {
+                let pat = ecx.pat_lit(span, ecx.expr_usize(span, id));
+                let ty = substr.type_ident;
+                let path = ecx.path_global(span, vec![ty, ident]);
+                let expr = match *fields {
+                    generic::Unnamed(ref fields) if fields.is_empty() => {
+                        ecx.expr_path(path)
+                    },
+                    generic::Named(ref fields) if fields.is_empty() => {
+                        ecx.expr_path(path)
+                    },
+                    generic::Unnamed(ref fields) => {
+                        let all: Vec<P<Expr>> = (0..fields.len()).map(|_| {
+                            quote_expr!(ecx, try!(::cereal::CerealData::read($reader)))
+                        }).collect();
+
+                        ecx.expr_call_global(span, vec![ty, ident], all)
+                    },
+                    generic::Named(ref fields) => {
+                        let all: Vec<Field> = fields.iter().map(|&(ident, _)| {
+                            ecx.field_imm(span, ident, quote_expr!(ecx, try!(::cereal::CerealData::read($reader))))
+                        }).collect();
+
+                        ecx.expr_struct(span, path, all)
+                    },
+                };
+                ecx.arm(span, vec![pat], expr)
+            }).collect();
+            arms.push(ecx.arm(span, vec![ecx.pat_wild(span)],
+                quote_expr!(ecx,
+                    return ::std::result::Result::Err(::cereal::CerealError::Msg("Unknown variant".to_string()))
+                )
+            ));
+            let expr = quote_expr!(ecx, try!(<usize as ::cereal::CerealData>::read($reader)));
+            ecx.expr_match(span, expr, arms)
         },
         _ => {
             ecx.span_err(span, "Deriving CerealData for enums is currently unsupported!");
@@ -134,8 +174,22 @@ pub fn write_body(ecx: &mut ExtCtxt, span: Span, substr: &generic::Substructure)
                 Ok(())
             })
         },
+        generic::EnumMatching(var_id, _, ref fields) => {
+            let all: Vec<P<Stmt>> = fields.iter().map(|f| {
+                let ref self_ = f.self_;
+                quote_stmt!(ecx, {
+                    try!(::cereal::CerealData::write(&$self_, $writer));
+                }).unwrap()
+            }).collect();
+
+            quote_expr!(ecx, {
+                try!(::cereal::CerealData::write(&$var_id, $writer));
+                $all
+                Ok(())
+            })
+        },
         _ => {
-            ecx.span_err(span, "Deriving CerealData for enums is currently unsupported!");
+            ecx.span_err(span, "Unsupported type for CerealData");
             ecx.expr_none(span)
         }
     }

@@ -84,6 +84,10 @@ let a_reader: &mut Read = /* ... */;
 let my_awesome_instance_2 = MyAwesomeStruct::read(a_reader).unwrap();
 ```
 
+## A brief note on enums
+
+As of `v0.2.0`, you can now `#[derive(CerealData)]` on enums with both tuple and struct variants. However, for now there is no macro available for people on stable/beta channels. It may be possible, but it will take some time.
+
 ## What if it eats my laundry?
 This library is by nature a binarvore (binary data eater), but feeding it unhealthy data could result in it turning into a laundrovore.
 #### You have been warned

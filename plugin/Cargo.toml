@@ -1,6 +1,6 @@
 [package]
 name = "cereal_macros"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["HeroesGrave <heroesgrave@gmail.com>"]
 description = "Syntax extension for the cereal library"
 repository = "https://github.com/HeroesGrave/cereal"
