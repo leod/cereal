@@ -117,7 +117,7 @@ pub fn read_body(ecx: &mut ExtCtxt, span: Span, substr: &generic::Substructure) 
             let mut arms: Vec<Arm> = variants.iter().enumerate().map(|(id, &(ident, _, ref fields))| {
                 let pat = ecx.pat_lit(span, ecx.expr_usize(span, id));
                 let ty = substr.type_ident;
-                let path = ecx.path_global(span, vec![ty, ident]);
+                let path = ecx.path(span, vec![ty, ident]);
                 let expr = match *fields {
                     generic::Unnamed(ref fields) if fields.is_empty() => {
                         ecx.expr_path(path)
@@ -130,7 +130,7 @@ pub fn read_body(ecx: &mut ExtCtxt, span: Span, substr: &generic::Substructure) 
                             quote_expr!(ecx, try!(::cereal::CerealData::read($reader)))
                         }).collect();
 
-                        ecx.expr_call_global(span, vec![ty, ident], all)
+                        ecx.expr_call(span, ecx.expr_path(path), all)
                     },
                     generic::Named(ref fields) => {
                         let all: Vec<Field> = fields.iter().map(|&(ident, _)| {
