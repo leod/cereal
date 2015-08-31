@@ -33,6 +33,7 @@ pub fn expand(ecx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, ann: &Annotat
         generics: generic::ty::LifetimeBounds::empty(),
         additional_bounds: Vec::new(),
         associated_types: Vec::new(),
+        is_unsafe: false,
         methods: vec![
             generic::MethodDef {
                 name: "read",
