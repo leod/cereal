@@ -182,6 +182,30 @@ impl<T:CerealData> CerealData for Vec<T> {
     }
 }
 
+impl<T:CerealData> CerealData for Option<T> {
+    fn write(&self, write: &mut Write) -> CerealResult<()> {
+        match self {
+            &Some(ref x) => {
+                try!(true.write(write));
+                try!(x.write(write));
+                Ok(())
+            },
+            &None => {
+                try!(false.write(write));
+                Ok(())
+            }
+        }
+    }
+
+    fn read(read: &mut Read) -> CerealResult<Option<T>> {
+        if try!(bool::read(read)) {
+            Ok(Some(try!(T::read(read))))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
 impl<T:CerealData> CerealData for Box<T> {
     fn write(&self, write: &mut Write) -> CerealResult<()> {
         CerealData::write(&**self, write)
