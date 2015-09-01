@@ -206,6 +206,20 @@ impl<T:CerealData> CerealData for Option<T> {
     }
 }
 
+impl<T:CerealData, U:CerealData> CerealData for (T, U) {
+    fn write(&self, write: &mut Write) -> CerealResult<()> {
+        try!(self.0.write(write));
+        try!(self.1.write(write));
+        Ok(())
+    }
+
+    fn read(read: &mut Read) -> CerealResult<(T, U)> {
+        let t = try!(T::read(read));
+        let u = try!(U::read(read));
+        Ok((t, u))
+    }
+}
+
 impl<T:CerealData> CerealData for Box<T> {
     fn write(&self, write: &mut Write) -> CerealResult<()> {
         CerealData::write(&**self, write)
